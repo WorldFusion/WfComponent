@@ -13,11 +13,11 @@ namespace WfComponent.External
         public static readonly string samtoolsCmd = "samtools.exe";
         public static readonly string javaCmd = "java.exe";
 
-        public static string IGVstart(string binDir, string referencePath, string sortedBamPath)
+        public static string IGVstart(string binDir, string referencePath, string sortedBamPath, bool isBamCheck = true)
         {
             var res = string.Empty;
             if (!File.Exists(referencePath)) res += "not found reference fasta file.\n  Path  " + referencePath;
-            if (!File.Exists(sortedBamPath)) res += "not found sorted bam file.\n  Path  " + sortedBamPath;
+            if (!File.Exists(sortedBamPath) && isBamCheck) res += "not found sorted bam file.\n  Path  " + sortedBamPath;
 
             // find IGV-jar Path
             binDir = string.IsNullOrEmpty(binDir) ?

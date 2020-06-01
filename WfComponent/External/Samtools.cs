@@ -30,7 +30,7 @@ namespace WfComponent.External
         public string CreateIndex(string indexOp, string target)
         {
 
-            this.arguments = $"{indexOp}  {target}";
+            this.arguments = $"{indexOp}  \"{target}\"";
             return StartProcess();
         }
 
@@ -40,7 +40,13 @@ namespace WfComponent.External
         // bam, bam-index
         public string Sam2BamWithIndex(string inSamFile, string outSortedBam)
         {
-            this.arguments = $"sort  -O bam -o {outSortedBam}  {inSamFile}";
+            var thread = " -@ " +  Utils.ProcessUtils.DefaultCpuCore();
+            this.arguments = $"sort  {thread}  -O bam -o {Utils.FileUtils.GetDoubleQuotationPath(outSortedBam)}  {Utils.FileUtils.GetDoubleQuotationPath( inSamFile)}";
+            var sort = StartProcess();
+
+            if (sort == Utils.ConstantValues.NormalEndMessage)
+                this.arguments = $"index   {Utils.FileUtils.GetDoubleQuotationPath(outSortedBam)}";
+
             return StartProcess();
         }
 
@@ -58,11 +64,11 @@ namespace WfComponent.External
             args.Add("mpileup");
             args.Add("-BQ0 -d10000000");  //
             args.Add("-f");
-            args.Add(referencePath);
+            args.Add( Utils.FileUtils.GetDoubleQuotationPath( referencePath ));
             args.Add("-o");
-            args.Add(mplilupPath);
+            args.Add(Utils.FileUtils.GetDoubleQuotationPath(mplilupPath));
             args.Add("-a");   // マッピングされない場所も塩基をすべて出力する（Humanとかには向かないので注意）
-            args.Add(inBamPath);
+            args.Add(Utils.FileUtils.GetDoubleQuotationPath(inBamPath));
 
             // 
             this.arguments = string.Join(" ", args);

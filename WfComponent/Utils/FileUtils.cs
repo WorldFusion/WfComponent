@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace WfComponent.Utils
 {
@@ -207,14 +208,27 @@ namespace WfComponent.Utils
         // MiSeq 由来のFastq ファイル名から、共通部分（-- の 前半部分を共通としている）
         // 13I-005_S6_L001_R1_001.fastq.gz / 13I-005_S6_L001_R2_001.fastq.gz
         // -> 13I-005_S6 が basename
-        private static readonly string[] basenameSplitStr = new string[] { "--", "_L001_" };
+        private static readonly string[] certainWords = new string[] { "--", "_L001_" };
+        private static readonly string[] pairLetter = new string[] { "R1", "R2" };
         public static string GetMiseqFastqBaseName(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) return string.Empty;
             // C:\test\test.add.txt -> test
-            var fileName = System.IO.Path.GetFileNameWithoutExtension(filePath);
-            var baseName = fileName.Split(basenameSplitStr, StringSplitOptions.None).First();
-            return baseName;
+
+            var fileName = Path.GetFileNameWithoutExtension(filePath);
+            if (pairLetter.Where(s => fileName.Contains(s)).Any())
+            {
+                fileName = fileName.Split(pairLetter, StringSplitOptions.None).First();
+            }
+
+            if (certainWords.Where(s => fileName.Contains(s)).Any())
+            {
+                fileName = fileName.Split(certainWords, StringSplitOptions.None).First();
+            }
+
+            
+            // var baseName = fileName.Split(basenameSplitStr, StringSplitOptions.None).First();
+            return fileName;
         }
 
         public static bool IsOneByteString(string str)
@@ -442,6 +456,70 @@ namespace WfComponent.Utils
             var fixedFileName = nonValidName.Replace(" ", string.Empty);    // 空白は削除
             return fixedFileName;
         }
+
+        public static string CompressGzFile(string filePath, ref string message)
+        {
+            var gzFile = filePath + ".gz";
+            try
+            {
+                // 入力用ストリーム
+                using (FileStream fin = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (FileStream fout = File.Create(gzFile))                 // 出力用ストリーム
+                using (GZipStream gzout = new GZipStream(fout, CompressionMode.Compress))
+                    fin.CopyTo(gzout);
+            }
+            catch (Exception e)
+            {
+                message = e.Message;
+                return string.Empty;
+            }
+            return gzFile;
+        }
+
+
+        public static IEnumerable<string> FindFile(string searchDir, string fileName, string footer = "")
+        {
+
+            if (footer != "" && !footer.StartsWith("."))
+                footer = "." + footer;
+
+            var di = new DirectoryInfo(searchDir);
+            var files = di.EnumerateFiles(fileName + "*" + footer, SearchOption.AllDirectories);
+
+            if (files.Any())
+            {
+                var fastas = files.Select(s => s.FullName).ToArray();
+                return fastas;
+            }
+
+            return new string[] { };
+        }
+
+        public static string GetEscapePath(string filePath)
+        {
+            Regex matcher = new Regex(Regex.Escape(filePath));
+            return matcher.ToString();
+        }
+
+        public static char[] DubleqoteChar = { '"' };
+        public static string GetDoubleQuotationPath(string path)
+        {
+
+            var pathElm = path.TrimStart(DubleqoteChar)
+                                         .TrimEnd(DubleqoteChar);
+
+            path = "\"" + pathElm + "\"";
+            return path;
+        }
+
+        public static IEnumerable<string> GetDoubleQuotationPaths(IEnumerable<string> paths)
+        {
+            var pathElm = paths.Select(s => GetDoubleQuotationPath(s))
+                                            .ToArray();
+
+            return pathElm;
+        }
+
 
         // date pattern の 集約
         public static string UniqueDateString()

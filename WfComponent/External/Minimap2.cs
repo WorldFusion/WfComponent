@@ -49,9 +49,9 @@ namespace WfComponent.External
             if (! string.IsNullOrEmpty(op.UseCore)) args.Add("-t " + op.UseCore);
             if (! string.IsNullOrEmpty(op.OtherOptions)) args.Add(op.OtherOptions);
 
-            args.Add(op.Reference);
-            args.Add( string.Join(" ", op.QueryFastqs));
-            args.Add("-o " + op.OutFile);
+            args.Add(Utils.FileUtils.GetDoubleQuotationPath(op.Reference));
+            args.Add( string.Join(" ", Utils.FileUtils.GetDoubleQuotationPaths(op.QueryFastqs)));
+            args.Add("-o " + Utils.FileUtils.GetDoubleQuotationPath(op.OutFile));
             SetArguments (string.Join(" ", args));  // minimap2 arguments
 
             System.Diagnostics.Debug.WriteLine(binaryPath);

@@ -49,6 +49,9 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Bio.Core, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NetBio.Core.3.0.0-alpha\lib\netstandard2.0\Bio.Core.dll</HintPath>
+    </Reference>
     <Reference Include="HDF5DotNet, Version=1.8.9.0, Culture=neutral, PublicKeyToken=a4952c8df86d6e8c, processorArchitecture=AMD64">
       <HintPath>..\packages\HDF5DotNet.x64.1.8.9\lib\Net40\HDF5DotNet.dll</HintPath>
     </Reference>
@@ -73,6 +76,11 @@
     <Compile Include="External\Bowtie2.cs" />
     <Compile Include="External\Bowtie2Index.cs" />
     <Compile Include="External\CDHIT.cs" />
+    <Compile Include="External\ClustalOmega.cs" />
+    <Compile Include="External\ClustalW.cs" />
+    <Compile Include="External\Muscle.cs" />
+    <Compile Include="External\Properties\ClustalOmegaOptions.cs" />
+    <Compile Include="External\Properties\ClustalWOptions.cs" />
     <Compile Include="External\CollectWsl.cs" />
     <Compile Include="External\DummyProcess.cs" />
     <Compile Include="External\Guppy3Barcode.cs" />
@@ -91,21 +99,26 @@
     <Compile Include="External\Properties\GuppyOptions.cs" />
     <Compile Include="External\Properties\MiniasmOptions.cs" />
     <Compile Include="External\Properties\Minimap2Options.cs" />
+    <Compile Include="External\Properties\MuscleOptions.cs" />
     <Compile Include="External\Properties\PycoQCOptions.cs" />
     <Compile Include="External\Properties\RaconOptions.cs" />
     <Compile Include="External\Properties\SamtoolsOptions.cs" />
+    <Compile Include="External\Properties\SeqkitOptions.cs" />
     <Compile Include="External\Properties\SVIMOptions.cs" />
     <Compile Include="External\Properties\TrimmomaticOptions.cs" />
     <Compile Include="External\PycoQC.cs" />
     <Compile Include="External\Racon.cs" />
     <Compile Include="External\Samtools.cs" />
+    <Compile Include="External\Seqkit.cs" />
     <Compile Include="External\SVIM.cs" />
+    <Compile Include="External\TreeView.cs" />
     <Compile Include="External\Trimmomatic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestCommand.cs" />
     <Compile Include="Utils\ConstantValues.cs" />
     <Compile Include="Utils\Fasta.cs" />
     <Compile Include="Utils\FileUtils.cs" />
+    <Compile Include="Utils\Genbank.cs" />
     <Compile Include="Utils\ProcessUtils.cs" />
     <Compile Include="Utils\WindowsShutoffReboot.cs" />
   </ItemGroup>

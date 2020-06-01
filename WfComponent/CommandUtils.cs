@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace WfComponent
@@ -11,8 +13,8 @@ namespace WfComponent
         {
             if(! isWSL)
                 if (!pgName.EndsWith("exe") && !pgName.EndsWith("bat")) pgName += ".exe";
-            var di = new System.IO.DirectoryInfo(searchDir);
-            var files = di.EnumerateFiles(pgName, System.IO.SearchOption.AllDirectories);
+            var di = new DirectoryInfo(searchDir);
+            var files = di.EnumerateFiles(pgName, SearchOption.AllDirectories);
 
             // find success. 
             if (files.Count() > 0) return files.First().FullName;
@@ -27,7 +29,7 @@ namespace WfComponent
 
         public static bool IsWslExist()
         {
-            var wslExist = System.IO.File.Exists(RequestCommand.WslCommand);
+            var wslExist = File.Exists(RequestCommand.WslCommand);
             return wslExist;
         }
 

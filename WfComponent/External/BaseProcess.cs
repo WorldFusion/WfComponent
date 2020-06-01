@@ -1,5 +1,4 @@
-﻿using System.IO;
-using WfComponent.Base;
+﻿using WfComponent.Base;
 using WfComponent.External.Properties;
 
 namespace WfComponent.External
