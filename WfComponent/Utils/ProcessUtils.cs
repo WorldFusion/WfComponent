@@ -73,5 +73,8 @@ namespace WfComponent.Utils
         {
             return DefaultCpuCore().ToString();
         }
+
+        // public static void OutLog(string mes)
+        //     => System.Diagnostics.Debug.WriteLine(mes);
     }
 }

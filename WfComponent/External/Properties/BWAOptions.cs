@@ -2,11 +2,9 @@
 
 namespace WfComponent.External.Properties
 {
-    public class Bowtie2Options : BaseOptions
+    public class BWAOptions : BaseOptions
     {
 
-        public bool isFasta = true;
-        public bool isFastq = false;
         [Required()]
         public string fwdFasta;
         public string revFasta;

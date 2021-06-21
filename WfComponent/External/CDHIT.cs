@@ -14,7 +14,7 @@ namespace WfComponent.External
         public CDHIT(CdHitOptions options) : base(options)
         {
             this.op = options;
-            // BLAST に必須のパラメータをチェック
+            // 必須パラメータ チェック
 
             if (!string.IsNullOrEmpty(op.binaryPath) && File.Exists(op.binaryPath))
                 this.binaryPath = op.binaryPath;
@@ -34,9 +34,21 @@ namespace WfComponent.External
         {
             if (!isSuccess)
             {
-                Message = "Blast Process is initialisation Error";
+                Message = "CD-HIT Process is initialisation Error";
                 return Utils.ConstantValues.ErrorMessage;
             }
+
+            var other = string.IsNullOrEmpty(op.otherOptions) ?
+                                string.Empty :
+                                op.otherOptions;
+
+            var useThread = other.Contains("-T") ?
+                                        string.Empty :
+                                        " -T " + ProcessUtils.CpuCore();
+
+            var useMem = other.Contains("-M") ?
+                                        string.Empty :
+                                        " -M 0 " ;
 
             // create command string.
             var args = new List<string>()
@@ -47,8 +59,11 @@ namespace WfComponent.External
                 op.toFasta,
                 "-c",
                 op.identCutoff,
-                "-T ",  // use thread
-                ProcessUtils.CpuCore()
+
+                useThread,  // use thread
+                useMem,    // use memory , default is not enough
+
+                other  // other options,
             };
 
             SetArguments(string.Join(" ", args));  // blast arguments

@@ -1,4 +1,5 @@
-﻿using WfComponent.Base;
+﻿using System;
+using WfComponent.Base;
 using WfComponent.External.Properties;
 
 namespace WfComponent.External
@@ -14,6 +15,17 @@ namespace WfComponent.External
         protected string stdout = string.Empty;
         protected string stderr = string.Empty;
 
+        protected IProgress<string> progress;
+        protected BaseOptions baseoption;
+        public BaseProcess(BaseOptions options)
+        {
+            this.baseoption = options;
+            this.progress = options.progress;
+            if (this.progress == null)
+                this.progress = new Progress<string>(s => System.Diagnostics.Debug.WriteLine(s));
+        }
+
+        // 外部ツールのログ
         public string GetExecLog()
         {
             var s = string.IsNullOrEmpty(stderr) ? string.Empty : stderr + System.Environment.NewLine;
@@ -21,16 +33,10 @@ namespace WfComponent.External
             return s;
         }
 
-        public BaseProcess(BaseOptions options)
-        {
-
-        }
-
-
+        // まとめて取得するため
         protected void LogMessages(string log)
-        {
-            this.logMessage += log.Trim() + System.Environment.NewLine;
-        }
+            => this.logMessage += log.Trim() + System.Environment.NewLine;
+
 
         // search windows binary full-path
         protected bool BinaryExist(string binaryName) // 救済処置
@@ -54,8 +60,14 @@ namespace WfComponent.External
             var curDir = System.AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
             binaryPath = Utils.FileUtils.WindowsPath2LinuxPath(
                                 CommandUtils.FindProgramFile(curDir, wslName, true, false));
-
             if (!string.IsNullOrEmpty(binaryPath)) return true;   // binary見つかった。
+
+            // 普通に見つからない場合の回避
+            if(!string.IsNullOrEmpty(this.baseoption.binaryPath))
+                binaryPath = Utils.FileUtils.WindowsPath2LinuxPath(
+                    CommandUtils.FindProgramFile(this.baseoption.binaryPath, wslName, true, false));
+            if (!string.IsNullOrEmpty(binaryPath)) return true;   // binary見つかった。
+
             Message = "not found program : " + wslName;
             return false;
         }

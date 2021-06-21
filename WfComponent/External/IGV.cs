@@ -38,7 +38,7 @@ namespace WfComponent.External
             // IGV 起動
             res = RequestCommand.ExecCommandLeave(
                                                     binFullPath,
-                                                    $" -g {referencePath}  {sortedBamPath}");
+                                                    $" -g {Utils.FileUtils.GetDoubleQuotationPath(referencePath)}  {Utils.FileUtils.GetDoubleQuotationPath(sortedBamPath)}");
             return res;
         }
 

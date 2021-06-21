@@ -30,7 +30,7 @@ namespace WfComponent.External
         public string CreateIndex(string indexOp, string target)
         {
 
-            this.arguments = $"{indexOp}  \"{target}\"";
+            this.arguments = $"{indexOp}  {Utils.FileUtils.GetDoubleQuotationPath(target)}";
             return StartProcess();
         }
 
@@ -40,6 +40,8 @@ namespace WfComponent.External
         // bam, bam-index
         public string Sam2BamWithIndex(string inSamFile, string outSortedBam)
         {
+            System.Diagnostics.Debug.WriteLine("samtools sort/index  : " + inSamFile );
+
             var thread = " -@ " +  Utils.ProcessUtils.DefaultCpuCore();
             this.arguments = $"sort  {thread}  -O bam -o {Utils.FileUtils.GetDoubleQuotationPath(outSortedBam)}  {Utils.FileUtils.GetDoubleQuotationPath( inSamFile)}";
             var sort = StartProcess();
@@ -78,6 +80,7 @@ namespace WfComponent.External
 
         public override string StartProcess()
         {
+            System.Diagnostics.Debug.WriteLine("samtools start :" + op.targetFile );
             // create command string.
             proc = RequestCommand.GetInstance();
             isSuccess = ! proc.ExecuteWinCommand(   // Command は、isError が返答
@@ -98,6 +101,7 @@ namespace WfComponent.External
         public override string StopProcess()
         {
             this.proc.CommandCancel();
+            this.Message += "samtools cancel";
             return Utils.ConstantValues.CanceledMessage;
         }
     }

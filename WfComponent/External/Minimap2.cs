@@ -40,19 +40,17 @@ namespace WfComponent.External
                 return Utils.ConstantValues.ErrorMessage;
             }
 
-            isSuccess = false;
-
-            // create command string.
+             // create command string.
             var args = new List<string>();
-            if ( op.isMapping ) args.Add(" -a ");  // sam or paf
-            if (! string.IsNullOrEmpty(op.Preset)) args.Add("-x " + op.Preset);  // default? 
-            if (! string.IsNullOrEmpty(op.UseCore)) args.Add("-t " + op.UseCore);
-            if (! string.IsNullOrEmpty(op.OtherOptions)) args.Add(op.OtherOptions);
+            if (op.isMapping) args.Add(" -a ");  // sam or paf
+            if (!string.IsNullOrEmpty(op.Preset)) args.Add("-x " + op.Preset);  // default? 
+            if (!string.IsNullOrEmpty(op.UseCore)) args.Add("-t " + op.UseCore);
+            if (!string.IsNullOrEmpty(op.OtherOptions)) args.Add(op.OtherOptions);
 
             args.Add(Utils.FileUtils.GetDoubleQuotationPath(op.Reference));
-            args.Add( string.Join(" ", Utils.FileUtils.GetDoubleQuotationPaths(op.QueryFastqs)));
+            args.Add(string.Join(" ", Utils.FileUtils.GetDoubleQuotationPaths(op.QueryFastqs)));
             args.Add("-o " + Utils.FileUtils.GetDoubleQuotationPath(op.OutFile));
-            SetArguments (string.Join(" ", args));  // minimap2 arguments
+            SetArguments(string.Join(" ", args));  // minimap2 arguments
 
             System.Diagnostics.Debug.WriteLine(binaryPath);
             System.Diagnostics.Debug.WriteLine(arguments);
@@ -66,6 +64,7 @@ namespace WfComponent.External
 
             isSuccess = true;
             return Utils.ConstantValues.NormalEndMessage;
+
         }
 
         public override string StopProcess()

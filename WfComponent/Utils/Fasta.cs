@@ -315,7 +315,7 @@ namespace WfComponent.Utils
             algo.GapExtensionCost = -1;
 
             // Execute the alignment.
-            var results = algo.AlignSimple(aa1, aa2);
+            var results = algo.AlignSimple(aa1, aa2);   
 
             // Display / Process the results.
             System.Diagnostics.Debug.WriteLine("Pairwise Alignment: " + results.Count + " result entries");
@@ -341,8 +341,6 @@ namespace WfComponent.Utils
             res =  new String(' ' ,  lessLength) + res;
 
         }
-
-
 
     }
 }

@@ -43,7 +43,7 @@ namespace WfComponent.Utils
                     errorMessage = "not found file:" + filepath;
                     return new string[] { }; // ファイルない
                 }
-                errorMessage = null;
+                errorMessage = string.Empty;
                 string allLine = null;
 
                 using (StreamReader sr = new StreamReader(filepath))
@@ -99,9 +99,15 @@ namespace WfComponent.Utils
         public static void WriteFile(string outFilePath, IEnumerable<string> lines, ref string errorMessage, bool isAppend = false)
         {
             outFilePath = LinuxPath2WindowsPath(outFilePath);
-            errorMessage = null;
+            errorMessage = string.Empty;
             try
             {
+                if (string.IsNullOrEmpty(outFilePath))
+                {
+                    errorMessage = "not set write file path";
+                    return;
+                }
+
                 if (!IsDirectoryCreate(Path.GetDirectoryName(outFilePath)))
                 {
                     errorMessage = "not create directory";
@@ -121,13 +127,15 @@ namespace WfComponent.Utils
         public static void WriteFileFromString(string outFilePath, string line, ref string errorMessage)
         {
             outFilePath = LinuxPath2WindowsPath(outFilePath);
-            errorMessage = null;
+            errorMessage = string.Empty;
             try
             {
                 if (!IsDirectoryCreate(Path.GetDirectoryName(outFilePath))) {
                     errorMessage = "not create directory";
                     return;
                 }
+
+                if (File.Exists(outFilePath)) File.Delete(outFilePath);
                 using (StreamWriter writer = new StreamWriter(outFilePath, false, Encoding.Default))
                 {
                     writer.WriteLine(line);
@@ -209,13 +217,14 @@ namespace WfComponent.Utils
         // 13I-005_S6_L001_R1_001.fastq.gz / 13I-005_S6_L001_R2_001.fastq.gz
         // -> 13I-005_S6 が basename
         private static readonly string[] certainWords = new string[] { "--", "_L001_" };
-        private static readonly string[] pairLetter = new string[] { "R1", "R2" };
+        private static readonly string[] pairLetter = new string[] { "_R1_", "_R2_","_1.fastq", "_2.fastq", "_1.fastq.gz", "_2.fastq.gz" };
         public static string GetMiseqFastqBaseName(string filePath)
         {
             if (string.IsNullOrEmpty(filePath)) return string.Empty;
             // C:\test\test.add.txt -> test
 
-            var fileName = Path.GetFileNameWithoutExtension(filePath);
+            // var fileName = Path.GetFileNameWithoutExtension(filePath);
+            var fileName = Path.GetFileName(filePath);
             if (pairLetter.Where(s => fileName.Contains(s)).Any())
             {
                 fileName = fileName.Split(pairLetter, StringSplitOptions.None).First();
@@ -231,6 +240,7 @@ namespace WfComponent.Utils
             return fileName;
         }
 
+        // 引数のstring 文字列がデフォルトエンコードならtrue
         public static bool IsOneByteString(string str)
         {
             if (string.IsNullOrWhiteSpace(str)) return false;
@@ -241,6 +251,7 @@ namespace WfComponent.Utils
                 return false;
         }
 
+        // FilePath で与えられたファイルがLineCount以上ならtrue
         public static bool IsFileNumberOfLinesAbove(string filePath, long lineCount)
         {
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return false;
@@ -251,6 +262,7 @@ namespace WfComponent.Utils
 
         }
 
+        // FilePath で与えられたファイルのByte数を返します
         public static long FileSize(string filePath, ref string message)
         {
             if ( string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) return 0L;
@@ -291,11 +303,14 @@ namespace WfComponent.Utils
                                    Path.Combine(Path.GetDirectoryName(toFile),
                                           Path.GetFileNameWithoutExtension(toFile) + UniqueDateString() + Path.GetExtension(toFile)));
                 }
+                // 同じファイルがあると IOError
+                if (File.Exists(toFile))File.Delete(toFile);
+
                 File.Move(fromFile, toFile);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                message = "File copy error, Please check log.\n" + e.Message;
+                message = "File move error, Please check log.\n" + e.Message;
                 return true;
             }
             return false;
@@ -313,7 +328,7 @@ namespace WfComponent.Utils
             }
             catch (Exception e)
             {
-                message = "File backup (System.IO.File.Move) error, Please check log.\n" + e.Message;
+                message = "File backup (System.IO.File.Move) error, Please check log." + Environment.NewLine + e.Message;
                 return true;
             }
             return false;
@@ -476,26 +491,41 @@ namespace WfComponent.Utils
             return gzFile;
         }
 
-
+        // File の 検索する: 先頭ファイル名一致
         public static IEnumerable<string> FindFile(string searchDir, string fileName, string footer = "")
         {
 
             if (footer != "" && !footer.StartsWith("."))
                 footer = "." + footer;
+            try { 
+                var di = new DirectoryInfo(searchDir);
+                var files = di.EnumerateFiles(fileName + "*" + footer, SearchOption.AllDirectories);
 
-            var di = new DirectoryInfo(searchDir);
-            var files = di.EnumerateFiles(fileName + "*" + footer, SearchOption.AllDirectories);
-
-            if (files.Any())
+                if (files.Any())
+                {
+                    var fastas = files.Select(s => s.FullName).ToArray();
+                    return fastas;
+                }
+            } catch (Exception e)
             {
-                var fastas = files.Select(s => s.FullName).ToArray();
-                return fastas;
+                // 管理者権限の必要な時に
+                System.Diagnostics.Debug.WriteLine(e.Message);
             }
-
             return new string[] { };
         }
 
-        public static string GetEscapePath(string filePath)
+        // File の 検索する: 中間ファイル名一致
+        public static IEnumerable<string> PartOfSearchFile(string searchDir, string fileBaseName, string footer = "")
+        {
+            if (footer != "" && !footer.StartsWith("."))
+                footer = "." + footer;
+
+            // 対象ファイルを検索する
+            string[] fileList = Directory.GetFileSystemEntries(searchDir, "*" + fileBaseName + "*" + footer);
+            return fileList;
+        }
+
+            public static string GetEscapePath(string filePath)
         {
             Regex matcher = new Regex(Regex.Escape(filePath));
             return matcher.ToString();
@@ -520,6 +550,46 @@ namespace WfComponent.Utils
             return pathElm;
         }
 
+        // Pairend を取得する
+        public static IDictionary<string, string> GetPairFile(string[] fileNames)
+        {
+            var resDic = new Dictionary<string, string>();
+            Array.Sort(fileNames);
+            for(int i =0; i < fileNames.Count(); i++)
+            {
+                // 最後の要素がSingle
+                if (fileNames.Last() == fileNames[i])
+                {
+                    resDic.Add(fileNames.Last(), string.Empty);
+                    return resDic;
+                }
+                var f1 = fileNames[i];
+                var f2 = fileNames[i+1];
+                // ソート済みの2つを比較して、1文字違い（fwd.rev）なら Pairend
+                if (IsToleranceString(f1, f2, 1))
+                {
+                    resDic.Add(f1, f2);
+                    i++;
+                }
+                else
+                {
+                    resDic.Add(f1, string.Empty);
+                }
+            }
+            return resDic;
+        }
+
+        // 2つの文字列で、異なる文字が許容範囲であるかを判定
+        public static bool IsToleranceString(string s1 , string s2, int allowable)
+        {
+            var disc = System.Math.Abs(s1.Length - s2.Length);
+            var shortLength = (s1.Length < s2.Length) ? s1.Length : s2.Length;
+            for(int i=1; i < shortLength; i++)
+                if (!s1[i].Equals(s2[i]))
+                    disc++;
+
+            return disc <= allowable;
+        }
 
         // date pattern の 集約
         public static string UniqueDateString()
